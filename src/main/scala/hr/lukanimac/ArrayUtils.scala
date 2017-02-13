@@ -12,8 +12,8 @@ object ArrayUtils {
   def flatten(array: Array[Any]): Array[Int] = {
 
     @tailrec
-    def flattenRec(stack: List[Any], accumulator: ArrayBuffer[Int]): Array[Int] =
-      stack match {
+    def flattenRec(remaining: List[Any], accumulator: ArrayBuffer[Int]): Array[Int] =
+      remaining match {
         case Nil =>
           accumulator.toArray
 
@@ -83,5 +83,4 @@ object ArrayUtils {
     stringBuilder ++= ")"
     stringBuilder.toString
   }
-
 }

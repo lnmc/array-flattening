@@ -12,7 +12,7 @@ class FlatteningTests extends FlatSpec with Matchers {
   }
 
   "Flatten of a one-level nested array with no elements" should "result with an empty array" in {
-    assert (ArrayUtils.flatten(Array(Array())) === Array())
+    assert (ArrayUtils.flatten(Array(Array(), Array())) === Array())
   }
 
   "Flatten of a one-level nested interleaved array" should "produce correct result" in {

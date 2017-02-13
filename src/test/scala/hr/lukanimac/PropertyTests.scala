@@ -14,14 +14,14 @@ class PropertyTests extends PropSpec with GeneratorDrivenPropertyChecks with Mat
   val maxGenArraySize = 5
   val maxDepth = 10
 
-  property("an array that is a result of flatten should be equal to the generated flat array") {
-    forAll (nestedAndFlattenedArrayGen(maxDepth)) {
-      (array: (Array[Any], Array[Int])) =>
-         ArrayUtils.flatten(array._1) === array._2
+  property("flattened nested array should be equal to the generated flat array") {
+    forAll(nestedAndFlattenedArrayGen(maxDepth)) {
+      case (nestedArray, flatArray) =>
+        ArrayUtils.flatten(nestedArray) === flatArray
     }
   }
 
-  property("flattening of the already flat array should result with the same array") {
+  property("flattening of a flat array should result with the equal array") {
     forAll (Gen.containerOf[Array, Any](arbitrary[Int])) {
       (array: Array[Any]) =>
         ArrayUtils.flatten(array) should equal (array)
@@ -35,7 +35,7 @@ class PropertyTests extends PropSpec with GeneratorDrivenPropertyChecks with Mat
     }
   }
 
-  property("flattening of the single nesting level, non-interleaved nested array should give the same result as the ArrayOps flatten") {
+  property("flattening if an array with single nesting level should give the same result as the ArrayOps flatten") {
     forAll (Gen.containerOf[Array, Array[Int]](Gen.containerOf[Array, Int](arbitrary[Int]))) {
       (array: Array[Array[Int]]) =>
         ArrayUtils.flatten(array.map(x => x : Any)) should equal (array.flatten)
@@ -65,10 +65,7 @@ class PropertyTests extends PropSpec with GeneratorDrivenPropertyChecks with Mat
         (10, constantElements),
         (10, if (maxDepth > 0) nestedAndFlattenedArrayGen(maxDepth - 1) else constantElements)
       )
-    ).flatMap { array =>
-      val unzipped = array.unzip
-      (unzipped._1, unzipped._2.flatten)
-    }
+    ).flatMap(_.unzip match { case (nestedArray, flatArray) => (nestedArray, flatArray.flatten) })
   }
 
   def nestedEmptyArrayGen(maxDepth: Int): Gen[Array[Any]] =
