@@ -14,28 +14,28 @@ class PropertyTests extends PropSpec with GeneratorDrivenPropertyChecks with Mat
   val maxGenArraySize = 5
   val maxDepth = 10
 
-  property("flattened nested array should be equal to the generated flat array") {
+  property("flatten produces consistent results") {
     forAll(nestedAndFlattenedArrayGen(maxDepth)) {
       case (nestedArray, flatArray) =>
         ArrayUtils.flatten(nestedArray) === flatArray
     }
   }
 
-  property("flattening of a flat array should result with the equal array") {
+  property("flatten on a non-nested array does not alter the array") {
     forAll (Gen.containerOf[Array, Any](arbitrary[Int])) {
       (array: Array[Any]) =>
         ArrayUtils.flatten(array) should equal (array)
     }
   }
 
-  property("flattening of the nested empty array should result with an empty array") {
+  property("flatten on a nested array with no integer elements produces an empty array") {
     forAll (nestedEmptyArrayGen(maxDepth)) {
       (array: Array[Any]) =>
         ArrayUtils.flatten(array) should equal (Array())
     }
   }
 
-  property("flattening if an array with single nesting level should give the same result as the ArrayOps flatten") {
+  property("flatten on an array with single nesting level corresponds to the result of flatten in ArrayOps") {
     forAll (Gen.containerOf[Array, Array[Int]](Gen.containerOf[Array, Int](arbitrary[Int]))) {
       (array: Array[Array[Int]]) =>
         ArrayUtils.flatten(array.map(x => x : Any)) should equal (array.flatten)

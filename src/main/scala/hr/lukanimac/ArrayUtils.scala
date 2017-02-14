@@ -23,6 +23,7 @@ object ArrayUtils {
         case (x: Int) :: xs =>
           flattenRec(xs, accumulator += x)
 
+        // cases such as this one are covered by the case following it, but separating it helps avoid an unnecessary ++
         case Array(x: Int) :: xs =>
           flattenRec(xs, accumulator += x)
 
@@ -40,6 +41,8 @@ object ArrayUtils {
 
         case Array(xa: Array[Any], xs @ _*) :: ys =>
           flattenRec(xa ++: xs ++: ys, accumulator)
+
+        case z => throw new IllegalArgumentException("Unsupported element: " + z)
       }
 
       flattenRec(array.toList, new ArrayBuffer[Int]())
