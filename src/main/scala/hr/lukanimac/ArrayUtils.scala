@@ -1,7 +1,7 @@
 package hr.lukanimac
 
 import scala.annotation.tailrec
-import scala.collection.mutable.ArrayBuffer
+import scala.language.existentials
 
 /**
   * Created by luka on 12.02.17.
@@ -9,45 +9,58 @@ import scala.collection.mutable.ArrayBuffer
 
 object ArrayUtils {
 
+  /**
+    * Flattens a nested, possibly interleaved array of integers
+    * @param array the array to be flattened
+    * @return a flat array of integers
+    */
   def flatten(array: Array[Any]): Array[Int] = {
 
     @tailrec
-    def flattenRec(remaining: List[Any], accumulator: ArrayBuffer[Int]): Array[Int] =
+    def flattenRec(remaining: List[(Int, Array[_ >: Int])], accumulator: Vector[Int]): Array[Int] =
       remaining match {
         case Nil =>
           accumulator.toArray
 
-        case Array() :: xs =>
-          flattenRec(xs, accumulator)
+        case (pos, currentArray) :: rest =>
+          if (pos < currentArray.length) {
+            currentArray match {
+              case intArray: Array[Int] =>
+                flattenRec(rest, accumulator ++ intArray)
 
-        case (x: Int) :: xs =>
-          flattenRec(xs, accumulator += x)
+              case anyArray: Array[Any] =>
+                anyArray(pos) match {
+                  case x: Int =>
+                    flattenRec((pos + 1, currentArray) :: rest, accumulator :+ x)
 
-        // cases such as this one are covered by the case following it, but separating it helps avoid an unnecessary ++
-        case Array(x: Int) :: xs =>
-          flattenRec(xs, accumulator += x)
+                  case Array() =>
+                    flattenRec((pos + 1, currentArray) :: rest, accumulator)
 
-        case Array(x: Int, xs @ _* ) :: ys =>
-          flattenRec(xs ++: ys, accumulator += x)
+                  case anotherArray : Array[Int]  =>
+                    flattenRec((0, anotherArray) :: (pos + 1, currentArray) :: rest, accumulator)
 
-        case Array(xa: Array[Int]) :: ys =>
-          flattenRec(ys, accumulator ++= xa)
+                  case anotherArray : Array[Any] =>
+                    flattenRec((0, anotherArray) :: (pos + 1, currentArray) :: rest, accumulator)
 
-        case Array(xa: Array[Int], xs @ _*) :: ys =>
-          flattenRec(xs ++: ys, accumulator ++= xa)
-
-        case Array(xa: Array[Any]) :: ys =>
-          flattenRec(xa ++: ys, accumulator)
-
-        case Array(xa: Array[Any], xs @ _*) :: ys =>
-          flattenRec(xa ++: xs ++: ys, accumulator)
-
-        case z => throw new IllegalArgumentException("Unsupported element: " + z)
+                  case somethingElse =>
+                    throw new IllegalArgumentException("Invalid array element: " + somethingElse)
+                }
+            }
+          } else {
+            flattenRec(rest, accumulator)
+          }
       }
 
-      flattenRec(array.toList, new ArrayBuffer[Int]())
+      flattenRec(List((0, array)), Vector())
   }
 
+  /**
+    * Convenience method for visualising a nested array as a nice String.
+    * The method itself is not nice, though.
+    *
+    * @param array the array
+    * @return the string visualisation of the array
+    */
   def toString(array: Array[Any]): String = {
 
     val stringBuilder = new StringBuilder
