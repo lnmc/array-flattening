@@ -10,52 +10,54 @@ import scala.language.existentials
 object ArrayUtils {
 
   /**
-    * Flattens a nested, possibly interleaved array of integers
+    * Flattens a nested, possibly interleaved array of integers.
     * @param array the array to be flattened
     * @return a flat array of integers
+    * @throws IllegalArgumentException if the provided array is not a nested array of integers
     */
   def flatten(array: Array[Any]): Array[Int] = {
 
     @tailrec
     def flattenRec(remaining: List[(Int, Array[_ >: Int])], accumulator: Vector[Int]): Array[Int] =
+
       remaining match {
+
         case Nil =>
           accumulator.toArray
 
-        case (pos, currentArray) :: rest =>
-          if (pos < currentArray.length) {
-            currentArray match {
-              case intArray: Array[Int] =>
-                flattenRec(rest, accumulator ++ intArray)
+        case (_, intArray: Array[Int]) :: rest =>
+          flattenRec(rest, accumulator ++ intArray)
 
-              case anyArray: Array[Any] =>
-                anyArray(pos) match {
-                  case x: Int =>
-                    flattenRec((pos + 1, currentArray) :: rest, accumulator :+ x)
+        case (pos, anyArray: Array[Any]) :: rest if pos < anyArray.length =>
+          anyArray(pos) match {
 
-                  case Array() =>
-                    flattenRec((pos + 1, currentArray) :: rest, accumulator)
+            case x: Int =>
+              flattenRec((pos + 1, anyArray) :: rest, accumulator :+ x)
 
-                  case anotherArray : Array[Int]  =>
-                    flattenRec((0, anotherArray) :: (pos + 1, currentArray) :: rest, accumulator)
+            case Array() =>
+              flattenRec((pos + 1, anyArray) :: rest, accumulator)
 
-                  case anotherArray : Array[Any] =>
-                    flattenRec((0, anotherArray) :: (pos + 1, currentArray) :: rest, accumulator)
+            case anotherArray: Array[Int] =>
+              flattenRec((0, anotherArray) :: (pos + 1, anyArray) :: rest, accumulator)
 
-                  case somethingElse =>
-                    throw new IllegalArgumentException("Invalid array element: " + somethingElse)
-                }
-            }
-          } else {
-            flattenRec(rest, accumulator)
+            case anotherArray: Array[Any] =>
+              flattenRec((0, anotherArray) :: (pos + 1, anyArray) :: rest, accumulator)
+
+            case somethingElse =>
+              throw new IllegalArgumentException("Invalid array element: " + somethingElse)
           }
+
+        case _ :: rest =>
+          // the case when we reached the end of current Any array
+          flattenRec(rest, accumulator)
       }
 
-      flattenRec(List((0, array)), Vector())
+    flattenRec(List((0, array)), Vector())
   }
 
   /**
-    * Convenience method for visualising a nested array as a nice String.
+    * A convenience method for visualising a nested array as a nice String.
+    *
     * The method itself is not nice, though.
     *
     * @param array the array
