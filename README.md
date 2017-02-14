@@ -29,6 +29,7 @@ To execute tests in SBT shell simply run:
 ```
 
 ## Version 
+* **Version 0.2** - switched to immutable data structures for flattening
 * **Version 0.1** - the initial version containing the array flatten method and tests
 
 ## Contact
