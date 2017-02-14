@@ -5,7 +5,7 @@ Function for flattening of infinitely nested, interleaved integer arrays in Scal
 ## Download
 Clone the project:
 ```
-$ git clone https://github.com/username/software-project.git
+$ git clone https://github.com/lnmc/array-flattening.git
 ```
 
 ## Prerequisites
@@ -16,7 +16,7 @@ $ git clone https://github.com/username/software-project.git
 to install it. Recommended version is *0.13.13+*.
 
 
-## Usage
+## Testing
 Enter the project directory and run SBT:
 ```
 $ cd array-flattening 
